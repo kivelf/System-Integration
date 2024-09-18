@@ -32,15 +32,15 @@ namespace L09Opg1
             messageQueue = new MessageQueue(@".\Private$\L09TTLqueue");
             messageQueue.Label = "TTLqueue";
 
-            // sender SAS flight info
+            // sender besked med TTL
             string jsonString = JsonSerializer.Serialize(flightInfoETA);
             string AirlineCompany = "TTL_Test";
             Message msg = new Message();
-            msg.TimeToBeReceived = TimeSpan.FromSeconds(15);
             msg.Body = jsonString;
             msg.Label = AirlineCompany;
+            msg.TimeToBeReceived = TimeSpan.FromSeconds(60);
             messageQueue.Send(msg);
-            Console.WriteLine("Message sent to TTL Queue. TTL: 15 sec");
+            Console.WriteLine("Message sent to TTL Queue. TTL: 60 sec");
 
             Console.ReadLine();
         }
