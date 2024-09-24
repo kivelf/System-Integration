@@ -20,85 +20,66 @@ namespace L10Opg3
         public void OnMessage(Message message)
         {
             XmlDocument xml = new XmlDocument();
-            string XMLDocument = null;
-            Stream body = message.BodyStream;
-            StreamReader reader = new StreamReader(body);
-            XMLDocument = reader.ReadToEnd().ToString();
-            xml.LoadXml(XMLDocument);
+            string XMLDocument;
+            using (Stream body = message.BodyStream)
+            using (StreamReader reader = new StreamReader(body))
+            {
+                XMLDocument = reader.ReadToEnd();
+            }
 
-            // extract passenger and luggage data
+            xml.LoadXml(XMLDocument);
             XmlNode flightDetails = xml.SelectSingleNode("/FlightDetailsInfoResponse");
 
             if (flightDetails != null)
             {
-                // extract reservation number -- to be used as ID
                 string reservationID = flightDetails.SelectSingleNode("Passenger/ReservationNumber").InnerText;
-
-                // split passenger and luggage data
                 XmlNode passenger = flightDetails.SelectSingleNode("Passenger");
                 XmlNodeList luggageList = flightDetails.SelectNodes("Luggage");
 
-                // calculate total number of messages (passenger + luggage)
-                int totalMessages = 1 + luggageList.Count;  // 1 for the passenger, the rest for luggage
-
-                // create and send passenger message
-                XmlDocument passengerDoc = new XmlDocument();
-                XmlElement passengerRoot = passengerDoc.CreateElement("PassengerInfo");
-                passengerDoc.AppendChild(passengerRoot);
-
-                // add passenger details
-                XmlNode importedPassenger = passengerDoc.ImportNode(passenger, true);
-                passengerRoot.AppendChild(importedPassenger);
-
-                // if no luggage, add flight info to passenger
-                if (luggageList.Count == 0)
-                {
-                    XmlNode flight = flightDetails.SelectSingleNode("Flight");
-                    XmlNode importedFlight = passengerDoc.ImportNode(flight, true);
-                    passengerRoot.AppendChild(importedFlight);
-                }
-
-                // send passenger message (sequence = 1)
-                SendMessage(passengerQueue, passengerDoc, reservationID, 1, totalMessages);
-
-                // send luggage messages
-                int sequence = 2; // luggage starts with sequence 2
-                foreach (XmlNode luggage in luggageList)
-                {
-                    XmlDocument luggageDoc = new XmlDocument();
-                    XmlElement luggageRoot = luggageDoc.CreateElement("LuggageInfo");
-                    luggageDoc.AppendChild(luggageRoot);
-
-                    // add luggage details and flight info
-                    XmlNode importedLuggage = luggageDoc.ImportNode(luggage, true);
-                    luggageRoot.AppendChild(importedLuggage);
-
-                    XmlNode flight = flightDetails.SelectSingleNode("Flight");
-                    XmlNode importedFlight = luggageDoc.ImportNode(flight, true);
-                    luggageRoot.AppendChild(importedFlight);
-
-                    // send luggage message with incremented sequence
-                    SendMessage(luggageQueue, luggageDoc, reservationID, sequence, totalMessages);
-                    sequence++;
-                }
+                int totalMessages = 1 + luggageList.Count;
+                SendPassengerMessage(passenger, reservationID, totalMessages);
+                SendLuggageMessages(luggageList, flightDetails, reservationID, totalMessages);
 
                 Console.WriteLine("Message split and sent to Passenger and Luggage queues.");
             }
         }
 
-        // helper method to send messages with XmlDocument and sequence info
+        private void SendPassengerMessage(XmlNode passenger, string reservationID, int totalMessages)
+        {
+            XmlDocument passengerDoc = new XmlDocument();
+            XmlElement passengerRoot = passengerDoc.CreateElement("PassengerInfo");
+            passengerDoc.AppendChild(passengerRoot);
+            passengerRoot.AppendChild(passengerDoc.ImportNode(passenger, true));
+
+            SendMessage(passengerQueue, passengerDoc, reservationID, 1, totalMessages);
+        }
+
+        private void SendLuggageMessages(XmlNodeList luggageList, XmlNode flightDetails, string reservationID, int totalMessages)
+        {
+            int sequence = 2; // luggage starts with sequence 2
+            foreach (XmlNode luggage in luggageList)
+            {
+                XmlDocument luggageDoc = new XmlDocument();
+                XmlElement luggageRoot = luggageDoc.CreateElement("LuggageInfo");
+                luggageDoc.AppendChild(luggageRoot);
+                luggageRoot.AppendChild(luggageDoc.ImportNode(luggage, true));
+                luggageRoot.AppendChild(luggageDoc.ImportNode(flightDetails.SelectSingleNode("Flight"), true));
+
+                SendMessage(luggageQueue, luggageDoc, reservationID, sequence, totalMessages);
+                sequence++;
+            }
+        }
+
         private void SendMessage(MessageQueue queue, XmlDocument xmlDocument, string reservationID, int sequence, int totalMessages)
         {
-            Message msg = new Message();
+            Message msg = new Message
+            {
+                Body = xmlDocument,
+                Label = $"{reservationID}-{sequence}/{totalMessages}",
+                Formatter = new XmlMessageFormatter(new Type[] { typeof(XmlDocument) })
+            };
 
-            // set the body to be the XML document
-            msg.Body = xmlDocument;
-
-            // label format: reservationID-sequence/total (f.ex., CA937200305251-1/3)
-            msg.Label = $"{reservationID}-{sequence}/{totalMessages}";
-
-            // use XmlMessageFormatter with XmlDocument type to ensure it's sent as XML and not as a string!
-            msg.Formatter = new XmlMessageFormatter(new Type[] { typeof(XmlDocument) });
+            Console.WriteLine($"Sending message: {msg.Label}");
             queue.Send(msg);
         }
     }

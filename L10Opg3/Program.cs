@@ -16,6 +16,9 @@ namespace L10Opg3
         private static MessageQueue passengerQueue;
         private static MessageQueue luggageQueue;
         private static MessageQueue resequencerQueue;
+        private static Splitter splitter;
+        private static Resequencer resequencer;
+
         static void Main(string[] args)
         {
             // creating the four queues
@@ -50,17 +53,20 @@ namespace L10Opg3
             // create a list of input queues (passenger and luggage)
             List<MessageQueue> inputQueues = new List<MessageQueue> { passengerQueue, luggageQueue };
 
-            // initialise the resequencer with both queues
-            Resequencer resequencer = new Resequencer(inputQueues, resequencerQueue);
+            // create a single splitter instance
+            splitter = new Splitter(passengerQueue, luggageQueue);
 
-            // sending the message containing the check-in info (xml)
+            // create the resequencer and pass the input queues and resequencer queue
+            resequencer = new Resequencer(inputQueues, resequencerQueue);
+
+            // sending the check-in message
             SendCheckInMessage();
 
             Console.WriteLine("Listening for messages...");
             while (true) { }
         }
 
-        // Sending the XML message containing the check-in info
+        // sending the XML message containing the check-in info
         private static void SendCheckInMessage()
         {
             XElement CheckInFile = XElement.Load(@"CheckedInPassenger.xml");
@@ -78,8 +84,7 @@ namespace L10Opg3
             MessageQueue mq = (MessageQueue)sender;
             Message receivedMsg = mq.EndReceive(e.AsyncResult);
 
-            // split message into passenger and luggage queues
-            Splitter splitter = new Splitter(passengerQueue, luggageQueue);
+            // use the existing splitter instance to process the received message
             splitter.OnMessage(receivedMsg);
 
             // start listening for the next message
