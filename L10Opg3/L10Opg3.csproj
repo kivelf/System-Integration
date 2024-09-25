@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggregator.cs" />
     <Compile Include="Resequencer.cs" />
     <Compile Include="Splitter.cs" />
     <Compile Include="Program.cs" />

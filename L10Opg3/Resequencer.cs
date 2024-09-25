@@ -12,20 +12,17 @@ namespace L10Opg3
         private string[] labels;
         private bool[] sentFlags;
         private int totalMessages = 0;
-        private List<MessageQueue> inputQueues;
+        private MessageQueue inputQueue;
         private MessageQueue resequencerQueue;
         private readonly object lockObject = new object(); // to ensure thread safety
 
-        public Resequencer(List<MessageQueue> inputQueues, MessageQueue resequencerQueue)
+        public Resequencer(MessageQueue inputQueue, MessageQueue resequencerQueue)
         {
-            this.inputQueues = inputQueues;
+            this.inputQueue = inputQueue;
             this.resequencerQueue = resequencerQueue;
 
-            foreach (var queue in inputQueues)
-            {
-                queue.ReceiveCompleted += new ReceiveCompletedEventHandler(OnMessageReceived);
-                queue.BeginReceive();
-            }
+            inputQueue.ReceiveCompleted += new ReceiveCompletedEventHandler(OnMessageReceived);
+            inputQueue.BeginReceive();
         }
 
         private void OnMessageReceived(object sender, ReceiveCompletedEventArgs e)
@@ -40,7 +37,7 @@ namespace L10Opg3
                     Console.WriteLine("Resequencer received a message.");
                     string label = receivedMsg.Label;
                     int sequence = ParseSequence(label);
-                    totalMessages = ParseTotalMessages(label); // ensure total messages is updated
+                    totalMessages = ParseTotalMessages(label) - 1; // ensure total messages is updated
 
                     // initialise arrays if they don't exist yet
                     if (messages == null || messages.Length < totalMessages)
@@ -58,8 +55,8 @@ namespace L10Opg3
                         string XMLDocument = reader.ReadToEnd();
                         xml.LoadXml(XMLDocument);
                     }
-                    messages[sequence - 1] = xml.DocumentElement;
-                    labels[sequence - 1] = label;
+                    messages[sequence - 2] = xml.DocumentElement;
+                    labels[sequence - 2] = label;
 
                     // process and send any complete sequences
                     ProcessBufferedMessages();
@@ -92,13 +89,13 @@ namespace L10Opg3
                             };
 
                             resequencerQueue.Send(resequencerMessage);
-                            Console.WriteLine($"Message sent to resequencer queue: {labels[i]}");
+                            Console.WriteLine($"Message sent by resequencer to AirportLuggageSort queue: {labels[i]}");
 
                             sentFlags[i] = true; // mark message as sent
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error sending to resequencer queue: {ex.Message}");
+                            Console.WriteLine($"Error sending from resequencer to AirportLuggageSort queue: {ex.Message}");
                         }
                     }
                 }

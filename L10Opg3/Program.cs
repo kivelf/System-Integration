@@ -15,13 +15,15 @@ namespace L10Opg3
         private static MessageQueue messageQueue;
         private static MessageQueue passengerQueue;
         private static MessageQueue luggageQueue;
-        private static MessageQueue resequencerQueue;
+        private static MessageQueue luggageSortQueue;
+        private static MessageQueue aggregatedPassengerQueue;
         private static Splitter splitter;
         private static Resequencer resequencer;
+        private static Aggregator aggregator;
 
         static void Main(string[] args)
         {
-            // creating the four queues
+            // creating the five queues
             if (!MessageQueue.Exists(@".\Private$\L10AirportCheckInOutput"))
             {
                 MessageQueue.Create(@".\Private$\L10AirportCheckInOutput");
@@ -43,21 +45,31 @@ namespace L10Opg3
             luggageQueue = new MessageQueue(@".\Private$\L10AirportLuggage");
             luggageQueue.Label = "Luggage Queue";
 
-            if (!MessageQueue.Exists(@".\Private$\L10AirportResequencer"))
+            if (!MessageQueue.Exists(@".\Private$\L10AirportLuggageSort"))
             {
-                MessageQueue.Create(@".\Private$\L10AirportResequencer");
+                MessageQueue.Create(@".\Private$\L10AirportLuggageSort");
             }
-            resequencerQueue = new MessageQueue(@".\Private$\L10AirportResequencer");
-            resequencerQueue.Label = "Resequencer Queue";
+            luggageSortQueue = new MessageQueue(@".\Private$\L10AirportLuggageSort");
+            luggageSortQueue.Label = "Luggage Sort Queue";
 
-            // create a list of input queues (passenger and luggage)
-            List<MessageQueue> inputQueues = new List<MessageQueue> { passengerQueue, luggageQueue };
+            if (!MessageQueue.Exists(@".\Private$\L10AggregatedPassenger"))
+            {
+                MessageQueue.Create(@".\Private$\L10AggregatedPassenger");
+            }
+            aggregatedPassengerQueue = new MessageQueue(@".\Private$\L10AggregatedPassenger");
+            aggregatedPassengerQueue.Label = "Aggregated Passenger Queue";
+
+            // create a list of input queues (passenger and luggage) -- used by the aggregator
+            List<MessageQueue> inputQueues = new List<MessageQueue> { passengerQueue, luggageSortQueue };
 
             // create a single splitter instance
             splitter = new Splitter(passengerQueue, luggageQueue);
 
-            // create the resequencer and pass the input queues and resequencer queue
-            resequencer = new Resequencer(inputQueues, resequencerQueue);
+            // create the resequencer and pass the input and output queue
+            resequencer = new Resequencer(luggageQueue, luggageSortQueue);
+
+            // create the aggregator and pass the input and output queue
+            aggregator = new Aggregator(inputQueues, aggregatedPassengerQueue);
 
             // sending the check-in message
             SendCheckInMessage();
