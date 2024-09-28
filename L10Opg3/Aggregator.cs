@@ -91,7 +91,7 @@ namespace L10Opg3
                 // attaching the luggage data
                 for (int i = 1; i < messages.Length; i++)
                 {
-                    aggregatedRoot.AppendChild(aggregatedPassengerDoc.ImportNode(messages[i], true));
+                    aggregatedRoot.AppendChild(aggregatedPassengerDoc.ImportNode(messages[i].SelectSingleNode("Luggage"), true));
                 }
 
                 try
