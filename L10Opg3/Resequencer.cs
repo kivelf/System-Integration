@@ -27,7 +27,7 @@ namespace L10Opg3
 
         private void OnMessageReceived(object sender, ReceiveCompletedEventArgs e)
         {
-            lock (lockObject)
+            lock (lockObject) // ensure the method is thread-safe
             {
                 try
                 {
@@ -37,7 +37,7 @@ namespace L10Opg3
                     Console.WriteLine("Resequencer received a message.");
                     string label = receivedMsg.Label;
                     int sequence = ParseSequence(label);
-                    totalMessages = ParseTotalMessages(label) - 1; // ensure total messages is updated
+                    totalMessages = ParseTotalMessages(label) - 1; // ensure total messages is updated (-1 because we don't process the passenger message)
 
                     // initialise arrays if they don't exist yet
                     if (messages == null || messages.Length < totalMessages)
@@ -55,6 +55,9 @@ namespace L10Opg3
                         string XMLDocument = reader.ReadToEnd();
                         xml.LoadXml(XMLDocument);
                     }
+
+                    // sequence - 2 because: 1) we don't process the passenger message, just luggage messages
+                    // and 2) because the index of the array begins at 0, while messages begin at 1 :)
                     messages[sequence - 2] = xml.DocumentElement;
                     labels[sequence - 2] = label;
 
@@ -73,7 +76,7 @@ namespace L10Opg3
 
         private void ProcessBufferedMessages()
         {
-            lock (lockObject) // ensure this method is thread-safe
+            lock (lockObject) // ensure the method is thread-safe
             {
                 for (int i = 0; i < messages.Length; i++)
                 {

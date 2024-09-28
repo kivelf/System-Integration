@@ -59,7 +59,8 @@ namespace L10Opg3
             aggregatedPassengerQueue = new MessageQueue(@".\Private$\L10AggregatedPassenger");
             aggregatedPassengerQueue.Label = "Aggregated Passenger Queue";
 
-            // create a list of input queues (passenger and luggage) -- used by the aggregator
+
+            // create a list of input queues (passenger and luggage) - used by the aggregator
             List<MessageQueue> inputQueues = new List<MessageQueue> { passengerQueue, luggageSortQueue };
 
             // create a single splitter instance
@@ -82,7 +83,9 @@ namespace L10Opg3
         private static void SendCheckInMessage()
         {
             XElement CheckInFile = XElement.Load(@"CheckedInPassenger.xml");
+            Console.WriteLine("Original message:");
             Console.WriteLine(CheckInFile);
+            Console.WriteLine("------------------------------");
             string AirlineCompany = "SAS";
             messageQueue.Send(CheckInFile, AirlineCompany);
 

@@ -33,7 +33,7 @@ namespace L10Opg3
 
         private void OnMessageReceived(object sender, ReceiveCompletedEventArgs e)
         {
-            lock (lockObject)
+            lock (lockObject) // ensure the method is thread-safe
             {
                 try
                 {
@@ -80,7 +80,7 @@ namespace L10Opg3
 
         private void ProcessAggregatedMessages()
         {
-            lock (lockObject) // ensure this method is thread-safe
+            lock (lockObject) // ensure the method is thread-safe
             {
                 XmlDocument aggregatedPassengerDoc = new XmlDocument();
                 XmlElement aggregatedRoot = aggregatedPassengerDoc.CreateElement("FlightDetailsInfoResponse");
