@@ -40,7 +40,7 @@ namespace L10Opg3
                     MessageQueue mq = (MessageQueue)sender;
                     Message receivedMsg = mq.EndReceive(e.AsyncResult);
 
-                    Console.WriteLine("Aggregator received a message.");
+                    Console.WriteLine("Aggregator received a message: " + receivedMsg.Label);
                     label = ParseLabel(receivedMsg.Label.ToString());
                     int sequence = ParseSequence(receivedMsg.Label.ToString());
                     totalMessages = ParseTotalMessages(receivedMsg.Label.ToString()); // ensure total messages is updated

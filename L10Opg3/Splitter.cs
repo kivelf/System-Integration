@@ -40,7 +40,7 @@ namespace L10Opg3
                 SendPassengerMessage(passenger, reservationID, totalMessages);
                 SendLuggageMessages(luggageList, flightDetails, reservationID, totalMessages);
 
-                Console.WriteLine("Message split and sent to Passenger and Luggage queues.");
+                Console.WriteLine($"Message {message.Label} split and sent to Passenger and Luggage queues.");
             }
         }
 

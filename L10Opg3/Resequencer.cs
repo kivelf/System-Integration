@@ -34,7 +34,7 @@ namespace L10Opg3
                     MessageQueue mq = (MessageQueue)sender;
                     Message receivedMsg = mq.EndReceive(e.AsyncResult);
 
-                    Console.WriteLine("Resequencer received a message.");
+                    Console.WriteLine("Resequencer received a message: " + receivedMsg.Label);
                     string label = receivedMsg.Label;
                     int sequence = ParseSequence(label);
                     totalMessages = ParseTotalMessages(label) - 1; // ensure total messages is updated (-1 because we don't process the passenger message)
