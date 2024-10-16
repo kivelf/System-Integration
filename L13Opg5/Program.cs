@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Messaging;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace L13Opg5
@@ -16,6 +19,7 @@ namespace L13Opg5
         private static MessageQueue checkInQueue;
         private static MessageQueue cargoQueue;
         private static ContentFilter contentFilter;
+        private static Dictionary<string, double> cargoData;
         static void Main(string[] args)
         {
             // creating the two queues
@@ -33,8 +37,9 @@ namespace L13Opg5
             cargoQueue = new MessageQueue(@".\Private$\L13AirportCargo");
             cargoQueue.Label = "Passenger Queue";
 
-            // creating the content filter
+            // creating the content filter and data storage/dictionary
             contentFilter = new ContentFilter(cargoQueue);
+            cargoData = new Dictionary<string, double>();
 
             // sending the check-in message
             SendCheckInMessage();
@@ -66,8 +71,45 @@ namespace L13Opg5
             // use the existing content filer instance to process the received message
             contentFilter.OnMessage(receivedMsg);
 
+            // listening for incoming messages from the cargo queue
+            cargoQueue.ReceiveCompleted += new ReceiveCompletedEventHandler(OnCargoMessageReceived);
+            cargoQueue.BeginReceive();
+
             // start listening for the next message
             mq.BeginReceive();
+        }
+
+        private static void OnCargoMessageReceived(object sender, ReceiveCompletedEventArgs e)
+        {
+            MessageQueue mq = (MessageQueue)sender;
+            Message receivedMsg = mq.EndReceive(e.AsyncResult);
+
+            double weight = Convert.ToDouble(receivedMsg.Label.Remove(0, 14));
+
+            XmlDocument xml = new XmlDocument();
+            string XMLDocument;
+            using (Stream body = receivedMsg.BodyStream)
+            using (StreamReader reader = new StreamReader(body))
+            {
+                XMLDocument = reader.ReadToEnd();
+            }
+
+            xml.LoadXml(XMLDocument);
+            XmlNode flightDetails = xml.SelectSingleNode("CargoInfo/Flight");
+            string flight = flightDetails.Attributes["number"].Value;
+
+            if (!cargoData.ContainsKey(flight)) 
+            {
+                // add the flight to the dictionary
+                cargoData.Add(flight, 0);
+            }
+            cargoData[flight] += weight;
+
+            // print the cargo data for all flights
+            foreach (KeyValuePair<string, double> kvp in cargoData)
+            {
+                Console.WriteLine("Flight = {0}, Total Cargo Weight = {1}", kvp.Key, kvp.Value);
+            }
         }
     }
 }
