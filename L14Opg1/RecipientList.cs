@@ -12,14 +12,7 @@ namespace L14Opg1
 {
     internal class RecipientList
     {
-        Dictionary<string, MessageQueue> recipients = new Dictionary<string, MessageQueue>();
         public RecipientList() { }
-
-        public void AddRecipientChannel(MessageQueue recipient) 
-        {
-            string country = recipient.Label.Substring(0, 2);
-            recipients.Add(country, recipient);
-        }
 
         public void OnMessage(Message message)
         {
@@ -40,26 +33,12 @@ namespace L14Opg1
 
                 foreach (XmlNode node in passInfo)
                 {
-                    string nationality = node.SelectSingleNode("Nationality").InnerText;
-                    bool found = false;
-                    while (!found) 
-                    {
-                        foreach (KeyValuePair<string, MessageQueue> entry in recipients) 
-                        {
-                            if (entry.Key == nationality) 
-                            { 
-                                found = true;
-                                SendMessage(entry.Value, xml);
-                            }
-                        }
-                        // ending the loop
-                        found = true;
-                    }
+                    SendMessageToAllRecipients(node.SelectSingleNode("Nationality").InnerText, xml);
                 }
             }
         }
 
-        private void SendMessage(MessageQueue receiver, XmlDocument message)
+        private void SendMessageToAllRecipients(string nationality, XmlDocument message)
         {
             Message msg = new Message
             {
@@ -68,8 +47,36 @@ namespace L14Opg1
                 Formatter = new XmlMessageFormatter(new Type[] { typeof(XmlDocument) })
             };
 
-            Console.WriteLine($"Message sent to {receiver.Label}");
-            receiver.Send(msg);
+            switch (nationality) 
+            {
+                case ("DK"):
+                    MessageQueue dkQueue = checkIfQueueExists(@".\Private$\L14DKQueue");
+                    dkQueue.Send(msg);
+                    Console.WriteLine("Message sent to DK Queue");
+                    break;
+                case ("US"):
+                    MessageQueue usQueue = checkIfQueueExists(@".\Private$\L14USQueue");
+                    usQueue.Send(msg);
+                    Console.WriteLine("Message sent to US Queue");
+                    break;
+                case ("JP"):
+                    MessageQueue jpQueue = checkIfQueueExists(@".\Private$\L14JPQueue");
+                    jpQueue.Send(msg);
+                    Console.WriteLine("Message sent to JP Queue");
+                    break;
+                default:
+                    Console.WriteLine("Unknown nationality: " + nationality);
+                    break;
+            }
+        }
+
+        private static MessageQueue checkIfQueueExists(string path) 
+        {
+            if (!MessageQueue.Exists(path))
+            {
+                return MessageQueue.Create(path);
+            }
+            return new MessageQueue(path);
         }
     }
 }
