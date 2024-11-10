@@ -42,61 +42,7 @@ namespace L17Opg2
         static void Main(string[] args)
         {
             // creating the queues
-            if (!MessageQueue.Exists(@".\Private$\L17DataFromAPIQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17DataFromAPIQueue");
-            }
-            dataFromAPIQueue = new MessageQueue(@".\Private$\L17DataFromAPIQueue");
-            dataFromAPIQueue.Label = "Data In From API Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17AirTrafficControlCenterQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17AirTrafficControlCenterQueue");
-            }
-            airTrafficControlCenterQueue = new MessageQueue(@".\Private$\L17AirTrafficControlCenterQueue");
-            airTrafficControlCenterQueue.Label = "Air Traffic Control Center Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17AirportInformationCenterQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17AirportInformationCenterQueue");
-            }
-            airportInformationCenterQueue = new MessageQueue(@".\Private$\L17AirportInformationCenterQueue");
-            airportInformationCenterQueue.Label = "Airport Information Center Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17AirlineCompaniesQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17AirlineCompaniesQueue");
-            }
-            airlineCompaniesQueue = new MessageQueue(@".\Private$\L17AirlineCompaniesQueue");
-            airlineCompaniesQueue.Label = "Airline Companies Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17SASQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17SASQueue");
-            }
-            SASQueue = new MessageQueue(@".\Private$\L17SASQueue");
-            SASQueue.Label = "SAS Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17SouthWestQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17SouthWestQueue");
-            }
-            SWQueue = new MessageQueue(@".\Private$\L17SouthWestQueue");
-            SWQueue.Label = "South West Airline Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17KLMQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17KLMQueue");
-            }
-            KLMQueue = new MessageQueue(@".\Private$\L17KLMQueue");
-            KLMQueue.Label = "KLM Queue";
-
-            if (!MessageQueue.Exists(@".\Private$\L17BritishAirwaysQueue"))
-            {
-                MessageQueue.Create(@".\Private$\L17BritishAirwaysQueue");
-            }
-            BAQueue = new MessageQueue(@".\Private$\L17BritishAirwaysQueue");
-            BAQueue.Label = "British Airways Queue";
+            createQueues();
 
             // creating the publishers
             weatherPublisher = new WeatherPublisher(dataFromAPIQueue, airTrafficControlCenterQueue, airportInformationCenterQueue, airlineCompaniesQueue);
@@ -170,6 +116,65 @@ namespace L17Opg2
 
                 return xml_document;
             }
+        }
+
+        private static void createQueues() 
+        {
+            if (!MessageQueue.Exists(@".\Private$\L17DataFromAPIQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17DataFromAPIQueue");
+            }
+            dataFromAPIQueue = new MessageQueue(@".\Private$\L17DataFromAPIQueue");
+            dataFromAPIQueue.Label = "Data In From API Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17AirTrafficControlCenterQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17AirTrafficControlCenterQueue");
+            }
+            airTrafficControlCenterQueue = new MessageQueue(@".\Private$\L17AirTrafficControlCenterQueue");
+            airTrafficControlCenterQueue.Label = "Air Traffic Control Center Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17AirportInformationCenterQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17AirportInformationCenterQueue");
+            }
+            airportInformationCenterQueue = new MessageQueue(@".\Private$\L17AirportInformationCenterQueue");
+            airportInformationCenterQueue.Label = "Airport Information Center Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17AirlineCompaniesQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17AirlineCompaniesQueue");
+            }
+            airlineCompaniesQueue = new MessageQueue(@".\Private$\L17AirlineCompaniesQueue");
+            airlineCompaniesQueue.Label = "Airline Companies Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17SASQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17SASQueue");
+            }
+            SASQueue = new MessageQueue(@".\Private$\L17SASQueue");
+            SASQueue.Label = "SAS Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17SouthWestQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17SouthWestQueue");
+            }
+            SWQueue = new MessageQueue(@".\Private$\L17SouthWestQueue");
+            SWQueue.Label = "South West Airline Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17KLMQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17KLMQueue");
+            }
+            KLMQueue = new MessageQueue(@".\Private$\L17KLMQueue");
+            KLMQueue.Label = "KLM Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17BritishAirwaysQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17BritishAirwaysQueue");
+            }
+            BAQueue = new MessageQueue(@".\Private$\L17BritishAirwaysQueue");
+            BAQueue.Label = "British Airways Queue";
         }
     }
 }
