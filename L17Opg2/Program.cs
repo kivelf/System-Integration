@@ -68,6 +68,7 @@ namespace L17Opg2
             weatherPublisher = new WeatherPublisher(dataFromAPIQueue, airTrafficControlCenterQueue, airportInformationCenterQueue, airlineCompaniesQueue);
 
             string url = CurrentUrl.Replace("@LOC@", "London");
+            Console.WriteLine(GetFormattedXml(url));
             SendMessageToWeatherPublisherQueue(dataFromAPIQueue, GetXmlDoc(url));
 
 
@@ -82,7 +83,6 @@ namespace L17Opg2
                 Body = message,
                 Label = "From Weather Forecast API",
                 Formatter = new XmlMessageFormatter(new Type[] { typeof(XmlDocument) })
-                // TODO - fix formatting!!!
             };
 
             queue.Send(msg);
