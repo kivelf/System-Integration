@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Messaging;
 using System.Security.Policy;
+using System.Threading;
 
 namespace L17Opg2
 {
@@ -29,9 +30,14 @@ namespace L17Opg2
         private static MessageQueue airTrafficControlCenterQueue;
         private static MessageQueue airportInformationCenterQueue;
         private static MessageQueue airlineCompaniesQueue;
+        private static MessageQueue SASQueue;
+        private static MessageQueue SWQueue;
+        private static MessageQueue KLMQueue;
+        private static MessageQueue BAQueue;
 
         // publishers
         private static WeatherPublisher weatherPublisher;
+        private static AirlinePublisher airlinePublisher;
 
         static void Main(string[] args)
         {
@@ -64,13 +70,47 @@ namespace L17Opg2
             airlineCompaniesQueue = new MessageQueue(@".\Private$\L17AirlineCompaniesQueue");
             airlineCompaniesQueue.Label = "Airline Companies Queue";
 
+            if (!MessageQueue.Exists(@".\Private$\L17SASQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17SASQueue");
+            }
+            SASQueue = new MessageQueue(@".\Private$\L17SASQueue");
+            SASQueue.Label = "SAS Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17SouthWestQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17SouthWestQueue");
+            }
+            SWQueue = new MessageQueue(@".\Private$\L17SouthWestQueue");
+            SWQueue.Label = "South West Airline Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17KLMQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17KLMQueue");
+            }
+            KLMQueue = new MessageQueue(@".\Private$\L17KLMQueue");
+            KLMQueue.Label = "KLM Queue";
+
+            if (!MessageQueue.Exists(@".\Private$\L17BritishAirwaysQueue"))
+            {
+                MessageQueue.Create(@".\Private$\L17BritishAirwaysQueue");
+            }
+            BAQueue = new MessageQueue(@".\Private$\L17BritishAirwaysQueue");
+            BAQueue.Label = "British Airways Queue";
+
             // creating the publishers
             weatherPublisher = new WeatherPublisher(dataFromAPIQueue, airTrafficControlCenterQueue, airportInformationCenterQueue, airlineCompaniesQueue);
+            airlinePublisher = new AirlinePublisher(airlineCompaniesQueue, SASQueue, SWQueue, KLMQueue, BAQueue);
 
             string url = CurrentUrl.Replace("@LOC@", "London");
             Console.WriteLine(GetFormattedXml(url));
             SendMessageToWeatherPublisherQueue(dataFromAPIQueue, GetXmlDoc(url));
-
+            
+            Console.WriteLine("------------------------------");
+            Thread.Sleep(5000);
+            url = CurrentUrl.Replace("@LOC@", "Tokyo");
+            Console.WriteLine(GetFormattedXml(url));
+            SendMessageToWeatherPublisherQueue(dataFromAPIQueue, GetXmlDoc(url));
 
             while (true) { }
         }

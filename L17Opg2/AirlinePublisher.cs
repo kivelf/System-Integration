@@ -47,11 +47,11 @@ namespace L17Opg2
 
             // send a class-based message to SAS
             outQueueSAS.Send(TranslateMessage(XMLDocument, "SAS"), label);
-            Console.WriteLine("Message sent to " + outQueueSAS.Label);
+            Console.WriteLine("Message sent from Airline Companies Channel to " + outQueueSAS.Label);
 
             // send a string-based message to KLM
             outQueueKLM.Send(TranslateMessage(XMLDocument, "KLM"), label);
-            Console.WriteLine("Message sent to " + outQueueKLM.Label);
+            Console.WriteLine("Message sent from Airline Companies Channel to " + outQueueKLM.Label);
 
             // send the message as an XML-document to South West and British Airways
             Message SWMessage = new Message
@@ -61,7 +61,7 @@ namespace L17Opg2
                 Formatter = new XmlMessageFormatter(new Type[] { typeof(string) })
             };
             outQueueSouthWest.Send(SWMessage, label);
-            Console.WriteLine("Message sent to " + outQueueSouthWest.Label);
+            Console.WriteLine("Message sent from Airline Companies Channel to " + outQueueSouthWest.Label);
 
             Message BAMessage = new Message
             {
@@ -70,7 +70,7 @@ namespace L17Opg2
                 Formatter = new XmlMessageFormatter(new Type[] { typeof(string) })
             };
             outQueueBritishAirways.Send(BAMessage, label);
-            Console.WriteLine("Message sent to " + outQueueBritishAirways.Label);
+            Console.WriteLine("Message sent from Airline Companies Channel to " + outQueueBritishAirways.Label);
 
             mq.BeginReceive();
         }
