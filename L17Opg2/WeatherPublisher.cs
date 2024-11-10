@@ -90,7 +90,7 @@ namespace L17Opg2
                     filteredMessage = new Message
                     {
                         Body = filteredDoc,
-                        Label = "Weather Info for Airport Information Center",
+                        Label = "Weather Info for Air Traffic Control Center",
                         Formatter = new XmlMessageFormatter(new Type[] { typeof(XmlDocument) })
                     };
                     break;
