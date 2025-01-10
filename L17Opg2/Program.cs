@@ -53,7 +53,7 @@ namespace L17Opg2
             SendMessageToWeatherPublisherQueue(dataFromAPIQueue, GetXmlDoc(url));
             
             Console.WriteLine("------------------------------");
-            Thread.Sleep(5000);
+            Thread.Sleep(10000);
             url = CurrentUrl.Replace("@LOC@", "Tokyo");
             Console.WriteLine(GetFormattedXml(url));
             SendMessageToWeatherPublisherQueue(dataFromAPIQueue, GetXmlDoc(url));
